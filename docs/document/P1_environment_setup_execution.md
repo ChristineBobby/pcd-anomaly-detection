@@ -108,9 +108,9 @@ PASDF `environment_linux.yaml` 关键锁：
 - trimesh 3.22.4
 - pybullet 3.2.5
 
-注意：PASDF 环境文件没有显式列出 Open3D，但研究计划和配准/点云处理路线需要 Open3D。P1
-应把 `open3d` 作为额外 import 验证项；若 PASDF 官方代码暂不 import Open3D，也不要让它阻塞
-PASDF 官方评估。
+注意：PASDF 环境文件没有显式列出 Open3D，但 PASDF 当前代码的 `Test/infer.py`、
+`dataset/*.py`、`utils/utils_process.py` 都直接 `import open3d`。P1 必须把 `open3d`
+列为官方评估必需依赖，而不是可选可视化依赖。
 
 ### 2.2 PyTorch 与 PyTorch3D
 
@@ -292,6 +292,59 @@ cd /workspace/code_folder/area1/Anomaly
 export PYTHONPATH="$PWD/third_party/PASDF:$PYTHONPATH"
 ```
 
+### 4.3.1 本次实测修正记录
+
+2026-06-07 在 `continuumio/miniconda3:latest` / Debian 13 容器 `upbeat_jemison`
+中，官方脚本因为网络和依赖解析问题未直接跑完，改为手动安装。为了减少大包下载冲突，conda/pip
+下载 PyTorch、PyTorch3D、Open3D、PyBullet 等大包时显式关闭代理并使用清华镜像；Git 操作仍在宿主机执行。
+
+实测可用核心锁：
+
+- Python 3.10.20
+- PyTorch 1.11.0 / torchvision 0.12.0 / torchaudio 0.11.0 / cudatoolkit 11.3.1
+- PyTorch3D 0.7.4，构建为 `py310_cu113_pyt1110`
+- numpy 1.23.5
+- mkl 2021.4.0 / intel-openmp 2021.4.0
+- open3d 0.18.0
+- point-cloud-utils 0.29.6
+- pysdf 0.1.9
+- scikit-image 0.21.0 / scipy 1.11.1 / scikit-learn 1.5.2
+- trimesh 3.22.4
+- pybullet 3.2.6
+
+关键处理：
+
+- `torch` 首次 import 遇到 `libtorch_cpu.so: cannot enable executable stack`，对当前环境内
+  `libtorch_cpu.so` 清除了 `PT_GNU_STACK` 的 executable 标志，并保留
+  `.bak_noexecstack` 备份。换新环境时若复现同样错误，需要重复该补丁。
+- `torch` 随后遇到 `undefined symbol: iJIT_NotifyEvent`，根因是旧 PyTorch 1.11 与新
+  `mkl/intel-openmp 2025` 不兼容；降级到 `mkl=2021.4.0`、`intel-openmp=2021.4.0`、
+  `numpy=1.23.5` 后通过。
+- PyPI 当前没有 `pybullet==3.2.5` 的 Python 3.10 manylinux wheel；为避免在该基础容器中源码编译，
+  实测改用 `pybullet==3.2.6`。PASDF 使用到的是常规 pybullet API，import smoke test 已通过。
+- `pysdf==0.1.9` 用 conda-forge 安装，避免 pip 源码编译。
+- `meshplot=0.4.0` 用 conda-forge 安装；Python package metadata 会显示 `0.3.3`，这是上游包元数据差异。
+
+Debian 13 容器还需要 Open3D 运行时系统库：
+
+```bash
+apt-get update
+apt-get install -y --no-install-recommends libgl1 libgomp1 libc++1
+```
+
+实测安装后关键系统包版本：
+
+```text
+libc++1=1:19.0-63
+libc++1-19=1:19.1.7-3+b1
+libc++abi1-19=1:19.1.7-3+b1
+libgl1=1.7.0-1+b2
+libgl1-mesa-dri=25.0.7-2
+libglvnd0=1.7.0-1+b2
+libglx0=1.7.0-1+b2
+libgomp1=14.2.0-19
+```
+
 ### 4.4 安装项目开发依赖
 
 PASDF 环境用于运行主线，也应能运行本项目最小测试：
@@ -328,19 +381,17 @@ print("pcu", getattr(pcu, "__version__", "unknown"))
 PY
 ```
 
-可选 Open3D：
+Open3D 必须验证：
 
 ```bash
 python - <<'PY'
-try:
-    import open3d as o3d
-    print("open3d", o3d.__version__)
-except Exception as exc:
-    print("open3d import failed:", repr(exc))
+import open3d as o3d
+print("open3d", o3d.__version__)
 PY
 ```
 
-Open3D import 失败不阻塞 PASDF 官方评估；但会阻塞后续我们自己的 `alignment.py` 与可视化模块。
+若 Open3D 报 `libGL.so.1: cannot open shared object file`，先安装 4.3.1 中的 Debian 系统库。
+如果不允许改容器系统层，可临时用 `LD_LIBRARY_PATH=$CONDA_PREFIX/lib` 诊断，但不要把它作为最终方案。
 
 ### 4.6 GPU smoke test
 
@@ -419,7 +470,7 @@ conda create -n pasdf_compat python=3.10 -y
 conda activate pasdf_compat
 conda install pytorch==1.13.0 torchvision torchaudio cudatoolkit=11.6 -c pytorch -y
 conda install pytorch3d==0.7.4 -c pytorch3d -y
-python -m pip install point-cloud-utils==0.29.6 scikit-image==0.21.0 scipy==1.11.1 trimesh==3.22.4 pybullet==3.2.5
+python -m pip install point-cloud-utils==0.29.6 scikit-image==0.21.0 scipy==1.11.1 trimesh==3.22.4 pybullet==3.2.6
 ```
 
 然后重复 4.5-4.7 的 import/GPU/PyTorch3D smoke tests。
@@ -544,20 +595,20 @@ du -sh data/*
 
 PASDF 官方环境最低 DoD：
 
-- [ ] `conda activate pasdf`
-- [ ] `python -c "import torch, torchvision, pytorch3d"` 无报错
-- [ ] `python -c "import point_cloud_utils, trimesh, skimage"` 无报错
-- [ ] `torch.cuda.is_available()` 为 `True`
-- [ ] 普通 CUDA matmul smoke test 通过
-- [ ] PyTorch3D `chamfer_distance` CUDA smoke test 通过
-- [ ] PASDF submodule 已加入 `third_party/PASDF` 并钉死 commit
-- [ ] `environment.yml` 导出
-- [ ] `requirements-lock.txt` 导出
-- [ ] 环境日志保存到 `experiments/env_logs/`
+- [x] `conda activate pasdf`
+- [x] `python -c "import torch, torchvision, pytorch3d"` 无报错
+- [x] `python -c "import point_cloud_utils, trimesh, skimage, open3d"` 无报错
+- [x] `torch.cuda.is_available()` 为 `True`
+- [x] 普通 CUDA matmul smoke test 通过
+- [x] PyTorch3D `chamfer_distance` CUDA smoke test 通过
+- [x] PASDF submodule 已加入 `third_party/PASDF` 并钉死 commit
+- [x] `environment.yml` 导出
+- [x] `requirements-lock.txt` 导出
+- [x] 环境日志保存到 `experiments/env_logs/`
 
 可选 DoD：
 
-- [ ] Open3D import 成功
+- [x] PASDF 模块级 import 成功
 - [ ] `Test/AD_test.py --help` 或 config 解析能运行
 - [ ] 官方权重和预处理 SDF 已下载并校验目录结构
 
@@ -578,6 +629,9 @@ PO3AD DoD：
 | `pip install -e .` 在 PASDF 失败 | PASDF 可能无打包文件 | 不改第三方源码；用 `PYTHONPATH=$PWD/third_party/PASDF` |
 | `import pytorch3d` 失败 | PyTorch/PyTorch3D/CUDA 构建不匹配 | 检查 `conda list torch pytorch3d cudatoolkit` |
 | PyTorch3D CUDA op 失败 | RTX 4090/Ada 与 CUDA 11.3 运行时不兼容 | 进入路径 B |
+| `import torch` 报 executable stack | conda PyTorch 1.11 的 `libtorch_cpu.so` 在当前内核/挂载策略下要求可执行栈 | 清除该 so 的 `PT_GNU_STACK` executable 标志，保留备份并记录日志 |
+| `undefined symbol: iJIT_NotifyEvent` | PyTorch 1.11 与 MKL/intel-openmp 2025 不兼容 | 降到 `mkl=2021.4.0`、`intel-openmp=2021.4.0`、`numpy=1.23.5` |
+| Open3D 报 `libGL.so.1` 缺失 | 基础 Docker 镜像缺系统 OpenGL/C++ runtime | Debian 容器安装 `libgl1 libgomp1 libc++1` |
 | `libc10.so` 找不到 | PyTorch 动态库路径问题或混装 pip/conda torch | 同一环境只保留一种 torch 来源，优先 conda |
 | MinkowskiEngine BLAS 冲突 | MKL/OpenBLAS solver 冲突 | 先装 PyTorch，再装 openblas；必要时 classic solver |
 | `--install-option` 不识别 | 新 pip 移除/弱化旧参数路径 | 改用本地 clone + `python setup.py install` |
