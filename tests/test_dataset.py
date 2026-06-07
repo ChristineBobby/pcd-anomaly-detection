@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+
 from pcdad.data.dataset import (
     AnomalyShapeNetDataset,
     collect_dataset_statistics,

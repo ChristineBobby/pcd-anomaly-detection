@@ -49,6 +49,9 @@ extend-exclude = [
 select = ["E", "F", "I", "B", "UP", "SIM"]
 ignore = []
 
+[tool.ruff.lint.isort]
+known-first-party = ["pcdad"]
+
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]
