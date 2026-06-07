@@ -1,7 +1,8 @@
 dataset:
   name: anomaly_shapenet
   protocol: official_40_class
-  root: data/anomaly_shapenet
+  root: data/Anomaly-ShapeNet-v2
+  collections: [pcd]
   target_num_points: 16384
   normalize: unit_sphere
   normal_k: 32
