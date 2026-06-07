@@ -5,22 +5,38 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import numpy as np
 import yaml
 
 from pcdad.data.dataset import (
     ALL_PCD_COLLECTIONS,
     DEFAULT_COLLECTIONS,
+    AnomalyShapeNetDataset,
     DatasetStatistics,
     collect_dataset_statistics,
 )
+from pcdad.data.preprocess import NormalizationMode, prepare_pasdf_dataset
+from pcdad.viz.pointcloud import write_pointcloud_gt_svg
 
 DEFAULT_CONFIG = Path("configs/data/anomaly_shapenet.yaml")
 DEFAULT_OUTPUT = Path("experiments/data_stats.md")
+DEFAULT_PASDF_OUTPUT = Path("data/Anomaly-ShapeNet-v2/dataset/16384")
+DEFAULT_SMOKE_OUTPUT = Path("experiments/p2_smoke/anomaly_shapenet_gt_normals.svg")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stat", action="store_true", help="Compute dataset statistics.")
+    parser.add_argument(
+        "--prepare-pasdf",
+        action="store_true",
+        help="Create a PASDF-compatible fixed-size dataset under dataset/16384.",
+    )
+    parser.add_argument(
+        "--smoke-visualize",
+        action="store_true",
+        help="Write a point-cloud + GT + normal smoke SVG for one real sample.",
+    )
     parser.add_argument(
         "--config",
         type=Path,
@@ -41,6 +57,12 @@ def parse_args() -> argparse.Namespace:
         help="PCD collections to summarize. Default: value from config or pcd.",
     )
     parser.add_argument(
+        "--classes",
+        nargs="+",
+        default=None,
+        help="Optional class filter for PASDF preparation or smoke visualization.",
+    )
+    parser.add_argument(
         "--all-collections",
         action="store_true",
         help="Summarize both official pcd and extension new_pcd collections.",
@@ -50,6 +72,36 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=DEFAULT_OUTPUT,
         help=f"Markdown report path. Default: {DEFAULT_OUTPUT}",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=DEFAULT_PASDF_OUTPUT,
+        help=f"PASDF fixed-size dataset output root. Default: {DEFAULT_PASDF_OUTPUT}",
+    )
+    parser.add_argument(
+        "--target-num-points",
+        type=int,
+        default=16384,
+        help="Target point count for PASDF fixed-size samples.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Deterministic sampling seed.",
+    )
+    parser.add_argument(
+        "--normalize",
+        choices=[mode.value for mode in NormalizationMode],
+        default=NormalizationMode.NONE.value,
+        help="Normalization mode for PASDF fixed-size samples. Default keeps source scale.",
+    )
+    parser.add_argument(
+        "--max-points",
+        type=int,
+        default=4096,
+        help="Maximum points rendered in smoke visualization SVG.",
     )
     return parser.parse_args()
 
@@ -170,13 +222,62 @@ def _render_report(stats: DatasetStatistics) -> str:
     return "\n".join(lines)
 
 
+def _estimate_normals_for_smoke(points: np.ndarray) -> np.ndarray | None:
+    try:
+        import open3d as o3d
+    except ImportError:
+        return None
+
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(points.astype("float64", copy=False))
+    point_cloud.estimate_normals(
+        search_param=o3d.geometry.KDTreeSearchParamKNN(knn=32),
+    )
+    return np.asarray(point_cloud.normals, dtype=np.float32)
+
+
+def _write_smoke_visualization(
+    *,
+    root: Path,
+    collections: tuple[str, ...],
+    class_names: list[str] | None,
+    output: Path,
+    max_points: int,
+    seed: int,
+) -> None:
+    dataset = AnomalyShapeNetDataset(root, split="test", collections=collections)
+    for index in range(len(dataset)):
+        points, _normals, labels, meta = dataset[index]
+        if not meta["is_anomaly"]:
+            continue
+        if class_names is not None and meta["class_name"] not in class_names:
+            continue
+        title = (
+            f"{meta['class_name']} / {meta['sample_id']} "
+            f"({meta['anomaly_type']}, points={points.shape[0]}, anomalies={int(labels.sum())})"
+        )
+        write_pointcloud_gt_svg(
+            output,
+            points,
+            labels,
+            normals=_estimate_normals_for_smoke(points),
+            title=title,
+            max_points=max_points,
+            seed=seed,
+        )
+        print(f"Wrote smoke visualization to {output}")
+        print(f"sample={meta['sample_id']} class={meta['class_name']} points={points.shape[0]}")
+        return
+    raise SystemExit("No anomaly sample with GT matched the requested smoke visualization filters.")
+
+
 def main() -> None:
     args = parse_args()
+    config = _load_config(args.config)
+    dataset_config = _dataset_config(config)
+    root = _resolve_root(args, dataset_config)
+    collections = _resolve_collections(args, dataset_config)
     if args.stat:
-        config = _load_config(args.config)
-        dataset_config = _dataset_config(config)
-        root = _resolve_root(args, dataset_config)
-        collections = _resolve_collections(args, dataset_config)
         stats = collect_dataset_statistics(root, collections=collections)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(_render_report(stats), encoding="utf-8")
@@ -188,7 +289,32 @@ def main() -> None:
             f"anomaly_ratio={stats.aggregate_anomaly_ratio:.6f}"
         )
         return
-    raise SystemExit("No action requested. Use --stat after P2 is implemented.")
+    if args.prepare_pasdf:
+        manifest = prepare_pasdf_dataset(
+            root,
+            output_root=args.output_root,
+            target_num_points=args.target_num_points,
+            seed=args.seed,
+            collections=collections,
+            class_names=args.classes,
+            normalize=args.normalize,
+        )
+        print(
+            f"Wrote PASDF dataset to {manifest.output_root} "
+            f"samples={manifest.sample_count} target_num_points={manifest.target_num_points}"
+        )
+        return
+    if args.smoke_visualize:
+        _write_smoke_visualization(
+            root=root,
+            collections=collections,
+            class_names=args.classes,
+            output=args.output if args.output != DEFAULT_OUTPUT else DEFAULT_SMOKE_OUTPUT,
+            max_points=args.max_points,
+            seed=args.seed,
+        )
+        return
+    raise SystemExit("No action requested. Use --stat, --prepare-pasdf, or --smoke-visualize.")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-.PHONY: setup lint format test data eval train
+.PHONY: setup lint format test data data-pasdf data-smoke eval train
 
 PYTHON ?= $(shell if command -v python3 >/dev/null 2>&1; then command -v python3; elif command -v python >/dev/null 2>&1; then command -v python; elif [ -x /opt/conda/bin/python ]; then echo /opt/conda/bin/python; else echo python; fi)
 PROJECT_PYTHONPATH ?= src
@@ -23,6 +23,12 @@ test:
 
 data:
 	PYTHONPATH=$(PROJECT_PYTHONPATH) $(PYTHON) scripts/prepare_data.py --stat
+
+data-pasdf:
+	PYTHONPATH=$(PROJECT_PYTHONPATH) $(PYTHON) scripts/prepare_data.py --prepare-pasdf
+
+data-smoke:
+	PYTHONPATH=$(PROJECT_PYTHONPATH) $(PYTHON) scripts/prepare_data.py --smoke-visualize
 
 eval:
 	PYTHONPATH=$(PROJECT_PYTHONPATH) $(PYTHON) scripts/evaluate.py --config $(CFG)

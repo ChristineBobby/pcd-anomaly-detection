@@ -4,6 +4,8 @@ import importlib.util
 from pathlib import Path
 from types import ModuleType
 
+import numpy as np
+
 
 def _load_prepare_data_module() -> ModuleType:
     script_path = Path(__file__).resolve().parents[1] / "scripts" / "prepare_data.py"
@@ -34,6 +36,14 @@ def _write_ascii_pcd(path: Path, point_count: int) -> None:
                 "",
             ]
         ),
+        encoding="utf-8",
+    )
+
+
+def _write_gt(path: Path, labels: list[int]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "".join(f"{idx}.0,{idx + 1}.0,{idx + 2}.0,{label}.0\n" for idx, label in enumerate(labels)),
         encoding="utf-8",
     )
 
@@ -71,3 +81,67 @@ def test_prepare_data_stat_writes_markdown_report(tmp_path: Path, monkeypatch) -
     assert "- Samples: 2" in report
     assert "- Min points: 2" in report
     assert "- Max points: 3" in report
+
+
+def test_prepare_data_prepare_pasdf_writes_fixed_size_dataset(tmp_path: Path, monkeypatch) -> None:
+    dataset_root = tmp_path / "Anomaly-ShapeNet-v2"
+    class_root = dataset_root / "dataset" / "pcd" / "widget0"
+    _write_ascii_pcd(class_root / "train" / "widget0_template0.pcd", 4)
+    _write_ascii_pcd(class_root / "test" / "widget0_bulge0.pcd", 4)
+    _write_gt(class_root / "GT" / "widget0_bulge0.txt", [0, 1, 0, 1])
+    output_root = tmp_path / "pasdf_3"
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "prepare_data.py",
+            "--prepare-pasdf",
+            "--root",
+            str(dataset_root),
+            "--output-root",
+            str(output_root),
+            "--target-num-points",
+            "3",
+            "--classes",
+            "widget0",
+            "--normalize",
+            "none",
+        ],
+    )
+
+    _load_prepare_data_module().main()
+
+    assert (output_root / "widget0" / "test" / "widget0_bulge0.pcd").is_file()
+    assert (output_root / "widget0" / "GT" / "widget0_bulge0.txt").is_file()
+    assert (output_root / "preprocess_manifest.json").is_file()
+
+
+def test_prepare_data_smoke_visualize_writes_svg(tmp_path: Path, monkeypatch) -> None:
+    dataset_root = tmp_path / "Anomaly-ShapeNet-v2"
+    class_root = dataset_root / "dataset" / "pcd" / "widget0"
+    _write_ascii_pcd(class_root / "test" / "widget0_bulge0.pcd", 4)
+    _write_gt(class_root / "GT" / "widget0_bulge0.txt", [0, 1, 0, 1])
+    output = tmp_path / "smoke.svg"
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "prepare_data.py",
+            "--smoke-visualize",
+            "--root",
+            str(dataset_root),
+            "--classes",
+            "widget0",
+            "--output",
+            str(output),
+            "--max-points",
+            "4",
+        ],
+    )
+
+    _load_prepare_data_module().main()
+
+    text = output.read_text(encoding="utf-8")
+    assert text.startswith("<svg")
+    assert "widget0_bulge0" in text
+    assert np.loadtxt(class_root / "GT" / "widget0_bulge0.txt", delimiter=",").shape == (4, 4)
