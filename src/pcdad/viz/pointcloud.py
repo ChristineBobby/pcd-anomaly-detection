@@ -114,7 +114,9 @@ def write_pointcloud_gt_svg(
         f'<line class="axis" x1="48" y1="48" x2="48" y2="{size - 48}"/>',
     ]
 
-    for (x, y), label in zip(projected, view_labels, strict=True):
+    for row_index, label in enumerate(view_labels):
+        x = float(projected[row_index, 0])
+        y = float(projected[row_index, 1])
         cls = "anomaly" if int(label) > 0 else "normal"
         radius = 2.4 if cls == "anomaly" else 1.6
         lines.append(f'<circle class="point {cls}" cx="{x:.2f}" cy="{y:.2f}" r="{radius:.2f}"/>')
@@ -135,7 +137,8 @@ def write_pointcloud_gt_svg(
             normal_lengths[nonzero],
             strict=True,
         ):
-            x, y = projected[idx]
+            x = float(projected[int(idx), 0])
+            y = float(projected[int(idx), 1])
             direction = vector / length
             end_x = x + direction[0] * 16.0
             end_y = y - direction[1] * 16.0
