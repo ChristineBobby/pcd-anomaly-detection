@@ -1,0 +1,12 @@
+defaults:
+  - ../base.yaml
+  - ../data/anomaly_shapenet.yaml
+  - ../model/pasdf.yaml
+
+experiment:
+  id: E1
+  name: pasdf_baseline
+  description: PASDF official-weight baseline on Anomaly-ShapeNet.
+  evaluation:
+    object_metrics: [o_auroc, o_aupr]
+    point_metrics: [p_auroc, p_aupr]

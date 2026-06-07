@@ -1,0 +1,4 @@
+model:
+  name: po3ad
+  repo_path: third_party/PO3AD
+  checkpoint_root: data/checkpoints/po3ad

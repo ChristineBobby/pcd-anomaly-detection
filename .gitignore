@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Environments
+.env
+.venv/
+venv/
+env/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Local worktrees
+.worktrees/
+worktrees/
+
+# Data, checkpoints, and experiment outputs
+data/*
+!data/README.md
+experiments/*
+!experiments/README.md
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.npy
+*.npz
+*.ply
+*.pcd
+*.obj
+*.stl
+*.off
+wandb/
+runs/
+
+# Local editor/system files
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,3 @@
+# Generated in P1 after the PASDF environment is built:
+# conda activate pasdf
+# pip freeze > requirements-lock.txt

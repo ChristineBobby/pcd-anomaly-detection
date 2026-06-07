@@ -1,0 +1,4 @@
+project:
+  name: pcd-anomaly-detection
+  seed: 2026
+  output_root: experiments

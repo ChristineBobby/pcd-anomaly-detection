@@ -1,0 +1,7 @@
+dataset:
+  name: real3d_ad
+  root: data/real3d_ad
+  normalize: unit_sphere
+  downsample:
+    method: voxel
+    voxel_size: 0.03

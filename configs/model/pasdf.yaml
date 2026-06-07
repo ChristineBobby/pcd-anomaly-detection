@@ -1,0 +1,6 @@
+model:
+  name: pasdf
+  repo_path: third_party/PASDF
+  checkpoint_root: data/checkpoints/pasdf
+  use_pam: true
+  voxel_size_config: third_party/PASDF/config_files/voxel_sizes.yaml

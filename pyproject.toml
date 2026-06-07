@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pcdad"
+version = "0.1.0"
+description = "3D point-cloud anomaly detection research codebase."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "PCD Anomaly Detection Team" }
+]
+dependencies = [
+  "numpy>=1.23",
+  "pyyaml>=6.0",
+  "scikit-learn>=1.2",
+  "tqdm>=4.64"
+]
+
+[project.optional-dependencies]
+dev = [
+  "black>=24.4",
+  "mypy>=1.10",
+  "pre-commit>=3.7",
+  "pytest>=8.2",
+  "ruff>=0.5"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pcdad"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = []
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["pcdad"]
+strict = true
+warn_unused_configs = true
