@@ -28,6 +28,23 @@ data/Anomaly-ShapeNet-v2/dataset/pcd/
 
 实测点数范围为 **17,422-157,824**，均值 **56,861.24**，与课程任务书的高密度口径一致，明显高于公开低密度 `8K-30K` 版本。PASDF 后续评估必须按 `target_num_points=16384` 做下采样/采样策略控制，不能假设输入天然是公开低密度版本。
 
+### 0.1 P2 DoD 状态
+
+按 `SOP_engineering_workflow.md` 的 P2 DoD 拆分，当前状态如下：
+
+| 项目 | 状态 | 证据/说明 |
+|---|---|---|
+| 数据集解压与目录确认 | 已完成 | `data/Anomaly-ShapeNet-v2/` 为有效目录；`7z` 失败残留已隔离为忽略目录 |
+| `experiments/data_stats.md` 产出 | 已完成 | `make data` 可重新生成；主协议统计为 40 类、1472 样本、train 160、test 1312 |
+| 点数口径结论 | 已完成 | `pcd` 点数为 17,422-157,824，均值 56,861.24，确认是高密度课程版 |
+| 官方 40 类主协议固化 | 已完成 | `configs/data/anomaly_shapenet.yaml` 使用 `collections: [pcd]` 和 `target_num_points: 16384` |
+| DataLoader 与单测 | 已完成 | `AnomalyShapeNetDataset` 返回 `(points, normals, labels, meta)`；`make test` 通过 |
+| 随机抽 1 类可视化点云 + GT | 未完成 | 尚未实现 P2 可视化 smoke artifact；进入 P3 前应补一张本地图或交互检查记录 |
+| 标准化/16384 点采样产物 | 部分完成 | 配置已固化目标点数，但尚未生成标准化缓存；P3 PASDF wrapper 必须实现确定性采样并记录策略 |
+| 法向估计 | 未完成且有意延期 | 源 PCD 只有 XYZ；当前 Dataset 返回零法向占位。真实法向估计放到后续 `preprocess.py` 或几何模块，不在 DataLoader 热路径中做 |
+
+因此，P2 的“数据审计 + 协议口径 + DataLoader”已经完成；严格按 SOP，P2 还剩可视化 smoke 和标准化/采样落地两项未完成。它们不影响开始 P3 的官方 PASDF 权重评估，但必须在 P3 wrapper 或 P4 几何模块中补齐并记录。
+
 ---
 
 ## 1. 解压排查与处理
