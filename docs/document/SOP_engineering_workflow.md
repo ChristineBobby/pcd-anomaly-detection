@@ -236,21 +236,27 @@ pcd-anomaly-detection/
 - 功能分支：`feat/<scope>-<desc>`、`fix/<...>`、`exp/<expid>-<...>`、`docs/<...>`。
 - 一切改动经 PR 合入 `main`；**至少 1 人 review + CI 通过**才可 merge；用 squash merge 保持历史干净。
 
-### 6.2 提交规范（Conventional Commits）
+### 6.2 Docker 与 Git 操作边界
+- Docker 容器用于环境隔离、依赖安装、训练、评估、测试与 lint，避免污染宿主机 Python/CUDA 环境。
+- 代码仓库仍以宿主机工作目录为准；容器通过挂载访问同一目录，不在容器内另 clone 一份仓库。
+- **push/pull/fetch 等需要 GitHub 凭据的操作优先在宿主机终端执行**，不要在 Docker 容器内处理 GitHub 登录或 token。宿主机终端已配置凭据时，直接运行 `git push -u origin main` 或后续分支 push。
+- 容器内可以执行只依赖本地仓库状态的 Git 命令，例如 `git status`、`git diff`、`git log`，用于调试和记录实验 git hash。
+
+### 6.3 提交规范（Conventional Commits）
 - 格式：`<type>(<scope>): <subject>`，type ∈ `feat|fix|refactor|test|docs|chore|exp`。
 - 例：`feat(geometry): add multi-scale curvature residual`。
 - 主题用祈使句、≤50 字符；正文说明 why。提交粒度小而自洽，一个提交只做一件事。
 
-### 6.3 Pull Request 规范
+### 6.4 Pull Request 规范
 - 用 PR 模板：变更动机、做法、测试方式、影响范围、关联 Issue/实验号、自检清单。
 - PR 必须：通过 CI（lint+test）、附必要截图/指标、勾选自检清单。
 - Review 关注：正确性 > 可读性 > 复用 > 简洁。Reviewer 至少留一条实质意见或明确 Approve。
 
-### 6.4 .gitignore 要点
+### 6.5 .gitignore 要点
 - 忽略：`data/`、`experiments/`、`*.pth/*.pt`(除受控)、`__pycache__`、`.ipynb_checkpoints`、`wandb/`、本地 `.env`。
 - 永不提交：数据集、大权重、含绝对路径的本地配置、密钥。
 
-### 6.5 实验可复现铁律
+### 6.6 实验可复现铁律
 - 每个实验 = 一个 `configs/experiment/*.yaml` + 一次运行目录 `experiments/{expid}_{date}_{githash}/`。
 - 运行前固定随机种子（`utils/seed.py` 统一设置 numpy/torch/random + `cudnn.deterministic`）。
 - 运行目录必存：完整 config 快照、git commit hash、环境锁文件、stdout 日志、指标 csv、关键可视化。
