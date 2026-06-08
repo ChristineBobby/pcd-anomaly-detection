@@ -73,7 +73,7 @@ def test_plan_pasdf_voxel_sweep_cli_writes_markdown_and_csv(
 
     report = markdown.read_text(encoding="utf-8")
     priority_csv = csv_path.read_text(encoding="utf-8")
-    assert report.startswith("# P4 PASDF Registration Diagnostics")
+    assert report.startswith("# P4 PASDF Registration 诊断记录")
     assert "| cap3 | 0.846928 | 0.550877 | 1 | 1 | 0.030 |" in report
     assert "class,pixel_auc,object_auc,warning_count,warning_sample_count" in priority_csv
     assert "cap3,0.846928,0.550877,1,1,0.03" in priority_csv

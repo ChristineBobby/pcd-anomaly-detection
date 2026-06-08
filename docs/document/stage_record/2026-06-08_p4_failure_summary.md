@@ -1,35 +1,35 @@
-# P4 PASDF Failure Analysis Summary
+# P4 PASDF 失败分析摘要
 
-## Scope
+## 记录范围
 
-- Results CSV: `experiments/E1_pasdf_baseline/full_40cls/evaluation_results.csv`
-- Run log: `experiments/E1_pasdf_baseline/full_40cls/run.log`
-- Classes: 40
+- 结果 CSV：`experiments/E1_pasdf_baseline/full_40cls/evaluation_results.csv`
+- 运行日志：`experiments/E1_pasdf_baseline/full_40cls/run.log`
+- 类别数：40
 
-## Metric Summary
+## 指标摘要
 
 - mean_pixel_auc: `0.896009030694`
 - mean_object_auc: `0.900214149779`
 - min_pixel: `helmet1` = `0.622745369843`
 - min_object: `cap3` = `0.550877192982`
 
-## Threshold Failures
+## 阈值失败类别
 
 - pixel_auc < 0.85: `helmet1`, `bowl2`, `helmet0`, `vase1`, `helmet2`, `headset1`, `cap3`
 - object_auc < 0.8: `cap3`, `cap4`, `tap1`, `helmet2`, `microphone0`, `shelf0`, `cap5`
 
-## Open3D Warning Summary
+## Open3D Warning 摘要
 
 - total_too_few_correspondences: 53
 - unattributed_warnings: 0
 
-## P4 Priority Classes
+## P4 优先分析类别
 
 `cap3`, `cap4`, `tap1`, `helmet2`, `microphone0`, `shelf0`, `cap5`, `helmet1`, `bowl2`, `helmet0`, `vase1`, `headset1`
 
-## Failure Table
+## 失败类别明细
 
-| Class | Pixel AUROC | Object AUROC | Open3D Warnings |
+| 类别 | Pixel AUROC | Object AUROC | Open3D Warnings |
 |---|---:|---:|---:|
 | cap3 | 0.846928 | 0.550877 | 8 |
 | cap4 | 0.863803 | 0.628070 | 6 |

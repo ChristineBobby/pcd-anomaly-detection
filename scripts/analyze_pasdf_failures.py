@@ -50,7 +50,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--title",
-        default="P4 PASDF Failure Analysis Summary",
+        default="P4 PASDF 失败分析摘要",
         help="Markdown report title.",
     )
     return parser.parse_args()

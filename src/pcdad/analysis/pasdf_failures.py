@@ -229,7 +229,7 @@ def analyze_pasdf_failures(
 
 def _format_record_table(records: Iterable[ClassFailureRecord]) -> list[str]:
     lines = [
-        "| Class | Pixel AUROC | Object AUROC | Open3D Warnings |",
+        "| 类别 | Pixel AUROC | Object AUROC | Open3D Warnings |",
         "|---|---:|---:|---:|",
     ]
     for record in records:
@@ -254,47 +254,47 @@ def _merge_failure_rows(summary: PasdfFailureSummary) -> tuple[ClassFailureRecor
 def render_failure_report_markdown(
     summary: PasdfFailureSummary,
     *,
-    title: str = "PASDF Failure Analysis Summary",
+    title: str = "P4 PASDF 失败分析摘要",
 ) -> str:
     """Render a lightweight Markdown report suitable for stage records."""
 
     lines = [
         f"# {title}",
         "",
-        "## Scope",
+        "## 记录范围",
         "",
-        f"- Results CSV: `{summary.results_path}`",
+        f"- 结果 CSV：`{summary.results_path}`",
         (
-            f"- Run log: `{summary.log_path}`"
+            f"- 运行日志：`{summary.log_path}`"
             if summary.log_path is not None
-            else "- Run log: _not provided_"
+            else "- 运行日志：_未提供_"
         ),
-        f"- Classes: {summary.class_count}",
+        f"- 类别数：{summary.class_count}",
         "",
-        "## Metric Summary",
+        "## 指标摘要",
         "",
         f"- mean_pixel_auc: `{summary.mean_pixel_auc:.12f}`",
         f"- mean_object_auc: `{summary.mean_object_auc:.12f}`",
         f"- min_pixel: `{summary.min_pixel.class_name}` = `{summary.min_pixel.pixel_auc:.12f}`",
         f"- min_object: `{summary.min_object.class_name}` = `{summary.min_object.object_auc:.12f}`",
         "",
-        "## Threshold Failures",
+        "## 阈值失败类别",
         "",
         f"- pixel_auc < {summary.thresholds.pixel_auc}: "
         + _format_class_list(record.class_name for record in summary.pixel_failures),
         f"- object_auc < {summary.thresholds.object_auc}: "
         + _format_class_list(record.class_name for record in summary.object_failures),
         "",
-        "## Open3D Warning Summary",
+        "## Open3D Warning 摘要",
         "",
         f"- total_too_few_correspondences: {summary.open3d_warnings.total_count}",
         f"- unattributed_warnings: {summary.open3d_warnings.unattributed_count}",
         "",
-        "## P4 Priority Classes",
+        "## P4 优先分析类别",
         "",
         _format_class_list(summary.priority_classes),
         "",
-        "## Failure Table",
+        "## 失败类别明细",
         "",
     ]
     failure_rows = _merge_failure_rows(summary)

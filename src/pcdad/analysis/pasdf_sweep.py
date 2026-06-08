@@ -70,23 +70,23 @@ def collect_pasdf_sweep_results(spec: SweepCollectionSpec) -> SweepSummary:
 def render_sweep_summary_markdown(
     summary: SweepSummary,
     *,
-    title: str = "P4 PASDF Voxel Sweep Summary",
+    title: str = "P4 PASDF Voxel Sweep 结果摘要",
 ) -> str:
     """Render a Markdown summary for PASDF voxel sweep results."""
 
     lines = [
         f"# {title}",
         "",
-        "## Scope",
+        "## 记录范围",
         "",
-        f"- Sweep root: `{summary.root}`",
-        f"- Runs parsed: {len(summary.rows)}",
+        f"- Sweep 根目录：`{summary.root}`",
+        f"- 已解析 run 数：{len(summary.rows)}",
         "",
-        "## Best By Class",
+        "## 各类别最佳结果",
         "",
     ]
     lines.extend(_format_sweep_table(summary.best_by_class.values()))
-    lines.extend(["", "## All Runs", ""])
+    lines.extend(["", "## 全部 Run", ""])
     lines.extend(_format_sweep_table(summary.rows))
     lines.append("")
     return "\n".join(lines)
@@ -152,7 +152,7 @@ def _best_sort_key(row: SweepResultRow) -> tuple[float, float, int, float]:
 
 def _format_sweep_table(rows: Iterable[SweepResultRow]) -> list[str]:
     lines = [
-        "| Class | Voxel Size | Pixel AUROC | Object AUROC | Warnings | Warning Samples |",
+        "| 类别 | Voxel Size | Pixel AUROC | Object AUROC | Warning 数 | Warning 样本数 |",
         "|---|---:|---:|---:|---:|---:|",
     ]
     for row in rows:

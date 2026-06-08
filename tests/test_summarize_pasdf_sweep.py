@@ -69,7 +69,7 @@ def test_summarize_pasdf_sweep_cli_writes_markdown_and_csv(
 
     _load_script_module().main()
 
-    assert output.read_text(encoding="utf-8").startswith("# P4 PASDF Voxel Sweep Summary")
+    assert output.read_text(encoding="utf-8").startswith("# P4 PASDF Voxel Sweep 结果摘要")
     csv_text = csv_path.read_text(encoding="utf-8")
     assert "class,voxel_size,pixel_auc,object_auc,warning_count,warning_sample_count" in csv_text
     assert "cap3,0.02,0.84,0.61,1,1" in csv_text

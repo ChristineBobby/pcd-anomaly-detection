@@ -185,30 +185,30 @@ def build_registration_diagnostics(
 def render_registration_diagnostics_markdown(
     diagnostics: RegistrationDiagnostics,
     *,
-    title: str = "P4 PASDF Registration Diagnostics",
+    title: str = "P4 PASDF Registration 诊断记录",
 ) -> str:
     """Render a Markdown report for P4 registration diagnostics."""
 
     lines = [
         f"# {title}",
         "",
-        "## Scope",
+        "## 记录范围",
         "",
-        f"- Run log: `{diagnostics.run_log}`",
+        f"- 运行日志：`{diagnostics.run_log}`",
         (
-            f"- Voxel sizes: `{diagnostics.voxel_sizes_path}`"
+            f"- 官方 voxel size 配置：`{diagnostics.voxel_sizes_path}`"
             if diagnostics.voxel_sizes_path is not None
-            else "- Voxel sizes: _not provided_"
+            else "- 官方 voxel size 配置：_未提供_"
         ),
-        f"- Open3D warning events: {len(diagnostics.warning_events)}",
+        f"- Open3D warning 事件数：{len(diagnostics.warning_events)}",
         "",
-        "## Priority Classes",
+        "## 优先类别",
         "",
     ]
     lines.extend(_format_priority_table(diagnostics.priority_rows))
-    lines.extend(["", "## Warning Samples", ""])
+    lines.extend(["", "## Warning 样本", ""])
     lines.extend(_format_warning_sample_table(diagnostics.warning_sample_rows))
-    lines.extend(["", "## Voxel Sweep Commands", ""])
+    lines.extend(["", "## Voxel Sweep 命令", ""])
     lines.extend(f"```bash\n{command}\n```" for command in diagnostics.sweep_commands)
     lines.append("")
     return "\n".join(lines)
@@ -299,8 +299,8 @@ def _format_sweep_command(
 
 def _format_priority_table(rows: Iterable[RegistrationPriorityRow]) -> list[str]:
     lines = [
-        "| Class | Pixel AUROC | Object AUROC | Warnings | Warning Samples | "
-        "Official Voxel | Sweep Voxels |",
+        "| 类别 | Pixel AUROC | Object AUROC | Warning 数 | Warning 样本数 | "
+        "官方 Voxel | Sweep Voxel |",
         "|---|---:|---:|---:|---:|---:|---|",
     ]
     for row in rows:
@@ -317,7 +317,7 @@ def _format_priority_table(rows: Iterable[RegistrationPriorityRow]) -> list[str]
 
 def _format_warning_sample_table(rows: Iterable[WarningSampleRow]) -> list[str]:
     lines = [
-        "| Class | Sample | Warnings | Correspondence Range | Path |",
+        "| 类别 | 样本 | Warning 数 | Correspondence 范围 | 路径 |",
         "|---|---|---:|---|---|",
     ]
     for row in rows:

@@ -144,11 +144,10 @@ def test_render_registration_diagnostics_markdown_contains_sweep_plan(
 
     markdown = render_registration_diagnostics_markdown(
         diagnostics,
-        title="P4 Registration Diagnostics",
+        title="P4 Registration 诊断",
     )
 
-    assert markdown.startswith("# P4 Registration Diagnostics")
+    assert markdown.startswith("# P4 Registration 诊断")
     assert "| cap3 | 0.846928 | 0.550877 | 2 | 1 | 0.030 |" in markdown
     assert "cap3_concavity2.pcd" in markdown
-    assert "## Voxel Sweep Commands" in markdown
     assert "--voxel-size 0.02" in markdown

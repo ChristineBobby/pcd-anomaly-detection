@@ -58,14 +58,14 @@ def test_analyze_pasdf_failures_cli_writes_markdown_report(
             "--output",
             str(output),
             "--title",
-            "P4 Test Summary",
+            "P4 测试摘要",
         ],
     )
 
     _load_script_module().main()
 
     report = output.read_text(encoding="utf-8")
-    assert report.startswith("# P4 Test Summary")
+    assert report.startswith("# P4 测试摘要")
     assert "| cap3 | 0.846000 | 0.551000 | 1 |" in report
     stdout = capsys.readouterr().out
     assert f"Wrote PASDF failure summary to {output}" in stdout

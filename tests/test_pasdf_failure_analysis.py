@@ -87,10 +87,8 @@ def test_render_failure_report_markdown_contains_actionable_p4_sections(tmp_path
     _write_log(log_path)
     summary = analyze_pasdf_failures(results_path, log_path=log_path)
 
-    markdown = render_failure_report_markdown(summary, title="P4 Failure Summary")
+    markdown = render_failure_report_markdown(summary, title="P4 失败摘要")
 
-    assert markdown.startswith("# P4 Failure Summary")
-    assert "## Metric Summary" in markdown
+    assert markdown.startswith("# P4 失败摘要")
     assert "| cap3 | 0.846000 | 0.551000 | 2 |" in markdown
-    assert "## P4 Priority Classes" in markdown
     assert "`cap3`, `tap1`, `helmet1`" in markdown

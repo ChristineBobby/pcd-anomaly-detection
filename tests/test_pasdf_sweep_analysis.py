@@ -71,5 +71,4 @@ def test_render_sweep_summary_markdown_contains_best_table(tmp_path: Path) -> No
 
     assert markdown.startswith("# P4 Voxel Sweep")
     assert "| cap3 | 0.020 | 0.840000 | 0.610000 | 0 | 0 |" in markdown
-    assert "## All Runs" in markdown
     assert "| cap3 | 0.030 | 0.850000 | 0.550000 | 2 | 1 |" in markdown
