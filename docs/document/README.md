@@ -27,7 +27,12 @@ This directory keeps the reviewed project documents and execution notes.
   execution record, including adapter interfaces, Docker commands, asset checks, smoke
   evaluation, and full 40-class evaluation DoD.
 
+## 04 Stage Records
+
+- `stage_record/2026-06-08_p0_p3_stage_check.md` - P0-P3 stage checkpoint with current
+  repository status, data/evaluation evidence, validation gates, risks, and P4 suggestions.
+
 ## Future Categories
 
-- `04_experiments/` - Baseline and ablation execution notes.
-- `05_reports/` - Final report, figures, and presentation notes.
+- `05_experiments/` - Baseline and ablation execution notes.
+- `06_reports/` - Final report, figures, and presentation notes.
