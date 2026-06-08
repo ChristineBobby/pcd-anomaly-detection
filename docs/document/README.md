@@ -18,8 +18,16 @@ This directory keeps the reviewed project documents and execution notes.
   PASDF, PO3AD, PyTorch3D, MinkowskiEngine, Docker, RTX 4090 compatibility, validation
   gates, and known failure handling.
 
+## 03 Data And Baseline
+
+- `P2_data_preparation_execution.md` - P2 data preparation execution record, including
+  Anomaly-ShapeNet extraction, statistics, PASDF fixed-size 16,384-point dataset, GT
+  conversion, and smoke visualization.
+- `P3_pasdf_reproduction_execution.md` - P3 PASDF official-weight reproduction plan and
+  execution record, including adapter interfaces, Docker commands, asset checks, smoke
+  evaluation, and full 40-class evaluation DoD.
+
 ## Future Categories
 
-- `03_data/` - Data download, statistics, and dataset protocol notes.
 - `04_experiments/` - Baseline and ablation execution notes.
 - `05_reports/` - Final report, figures, and presentation notes.
