@@ -1,0 +1,12 @@
+class,voxel_size,pixel_auc,object_auc,warning_count,warning_sample_count,is_best_object_auc,run_dir
+cap3,0.02,0.8519858253369682,0.7719298245614035,12,1,False,experiments/P4_registration_sweep/cap3/vs_0p020
+cap3,0.03,0.8518247747455928,0.6105263157894737,8,1,False,experiments/P4_registration_sweep/cap3/vs_0p030
+cap3,0.04,0.8550433064935713,0.7719298245614035,0,0,True,experiments/P4_registration_sweep/cap3/vs_0p040
+cap3,0.05,0.8428219171289325,0.6245614035087719,0,0,False,experiments/P4_registration_sweep/cap3/vs_0p050
+cap4,0.02,0.8824146680422887,0.6105263157894737,2,1,False,experiments/P4_registration_sweep/cap4/vs_0p020
+cap4,0.03,0.8885188786788452,0.5894736842105264,6,1,False,experiments/P4_registration_sweep/cap4/vs_0p030
+cap4,0.04,0.8812359447361271,0.6771929824561402,8,1,False,experiments/P4_registration_sweep/cap4/vs_0p040
+cap4,0.05,0.8870327638446054,0.6877192982456141,7,1,True,experiments/P4_registration_sweep/cap4/vs_0p050
+helmet2,0.03,0.8012545166711829,0.6405797101449275,0,0,True,experiments/P4_registration_sweep/helmet2/vs_0p030
+tap1,0.03,0.903113959325957,0.7740740740740741,0,0,True,experiments/P4_registration_sweep/tap1/vs_0p030
+tap1,0.04,0.9007858980545635,0.7703703703703704,0,0,False,experiments/P4_registration_sweep/tap1/vs_0p040
