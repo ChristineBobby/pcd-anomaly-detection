@@ -10,6 +10,7 @@ from pcdad.analysis.sample_geometry import (
     render_geometry_smoke_markdown,
 )
 from pcdad.data.preprocess import write_ascii_xyz_pcd, write_pasdf_gt_txt
+from pcdad.scoring.geometric import GeometryScoreConfig
 
 
 def _make_geometry_dataset(root: Path) -> Path:
@@ -138,3 +139,48 @@ def test_render_geometry_smoke_markdown_contains_chinese_summary(tmp_path: Path)
     assert "## 类别摘要" in markdown
     assert "| widget0 | widget0_template0 |" in markdown
     assert "## 样本明细" in markdown
+
+
+def test_analyze_class_geometry_samples_uses_score_config_weights(tmp_path: Path) -> None:
+    dataset_root = _make_geometry_dataset(tmp_path)
+
+    distance_only = analyze_class_geometry_samples(
+        GeometryAnalysisSpec(
+            dataset_root=dataset_root,
+            class_name="widget0",
+            max_samples=1,
+            k_normal=4,
+            k_curvature=(4, 6),
+            topk_ratio=0.2,
+            use_normals=True,
+            use_curvature=True,
+            score_config=GeometryScoreConfig(
+                distance_weight=1.0,
+                normal_weight=0.0,
+                curvature_weight=0.0,
+                topk_ratio=0.2,
+                smooth_k=0,
+            ),
+        )
+    )
+    full_weight = analyze_class_geometry_samples(
+        GeometryAnalysisSpec(
+            dataset_root=dataset_root,
+            class_name="widget0",
+            max_samples=1,
+            k_normal=4,
+            k_curvature=(4, 6),
+            topk_ratio=0.2,
+            use_normals=True,
+            use_curvature=True,
+            score_config=GeometryScoreConfig(
+                distance_weight=1.0,
+                normal_weight=1.0,
+                curvature_weight=1.0,
+                topk_ratio=0.2,
+                smooth_k=0,
+            ),
+        )
+    )
+
+    assert full_weight.rows[0].object_score != distance_only.rows[0].object_score

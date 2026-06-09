@@ -1,0 +1,23 @@
+defaults:
+  - ../base.yaml
+  - ../data/anomaly_shapenet.yaml
+  - ../model/pasdf.yaml
+
+experiment:
+  id: A2
+  name: pasdf_normal
+  description: PASDF baseline with PCA normal residual smoke diagnostics.
+  geometry_smoke:
+    classes: [cap3, tap1, helmet1, ashtray0]
+    max_samples: 4
+    k_normal: 32
+    k_curvature: [16, 32, 64]
+    topk_ratio: 0.05
+    components:
+      distance: true
+      normal: true
+      curvature: false
+    score:
+      distance_weight: 1.0
+      normal_weight: 0.5
+      curvature_weight: 0.0

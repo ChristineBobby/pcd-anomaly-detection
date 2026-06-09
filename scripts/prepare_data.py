@@ -225,7 +225,7 @@ def _render_report(stats: DatasetStatistics) -> str:
 def _estimate_normals_for_smoke(points: np.ndarray) -> np.ndarray | None:
     try:
         import open3d as o3d
-    except ImportError:
+    except (ImportError, OSError):
         return None
 
     point_cloud = o3d.geometry.PointCloud()

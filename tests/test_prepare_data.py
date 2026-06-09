@@ -145,3 +145,21 @@ def test_prepare_data_smoke_visualize_writes_svg(tmp_path: Path, monkeypatch) ->
     assert text.startswith("<svg")
     assert "widget0_bulge0" in text
     assert np.loadtxt(class_root / "GT" / "widget0_bulge0.txt", delimiter=",").shape == (4, 4)
+
+
+def test_prepare_data_smoke_normal_estimation_falls_back_when_open3d_cannot_load(
+    monkeypatch,
+) -> None:
+    module = _load_prepare_data_module()
+    original_import = __import__
+
+    def raise_os_error(name, *args, **kwargs):
+        if name == "open3d":
+            raise OSError("libgomp.so.1: cannot open shared object file")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.__import__", raise_os_error)
+
+    normals = module._estimate_normals_for_smoke(np.zeros((4, 3), dtype=np.float32))
+
+    assert normals is None

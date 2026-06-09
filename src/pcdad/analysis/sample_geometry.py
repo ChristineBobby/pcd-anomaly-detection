@@ -34,6 +34,7 @@ class GeometryAnalysisSpec:
     topk_ratio: float = 0.05
     use_normals: bool = True
     use_curvature: bool = True
+    score_config: GeometryScoreConfig | None = None
 
 
 @dataclass(frozen=True)
@@ -288,7 +289,7 @@ def _analyze_sample(
     )
     score_result = score_geometry_residuals(
         residuals,
-        GeometryScoreConfig(topk_ratio=spec.topk_ratio, smooth_k=0),
+        spec.score_config or GeometryScoreConfig(topk_ratio=spec.topk_ratio, smooth_k=0),
     )
     labels = _labels_for_sample(sample, points.shape[0])
     gt_scores = score_result.point_scores[labels > 0]
