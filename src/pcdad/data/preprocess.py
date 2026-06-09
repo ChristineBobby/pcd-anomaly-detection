@@ -16,6 +16,7 @@ from pcdad.data.dataset import (
     DEFAULT_COLLECTIONS,
     SampleRecord,
     discover_samples,
+    load_gt_values,
     read_pcd_points,
 )
 
@@ -175,7 +176,7 @@ def read_gt_labels_for_points(
     points: np.ndarray[Any, np.dtype[np.float32]],
 ) -> np.ndarray[Any, np.dtype[np.int64]]:
     gt_path = Path(path)
-    gt_values = np.loadtxt(gt_path, delimiter=",", dtype=np.float32)
+    gt_values = load_gt_values(gt_path)
     return labels_for_points(points, gt_values)
 
 

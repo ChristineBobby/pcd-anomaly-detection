@@ -1,0 +1,4 @@
+class,run_id,pixel_auc,object_auc,warning_count,warning_sample_count,run_dir
+helmet2,run_001,0.8313410869717308,0.6521739130434783,0,0,experiments/P4_stability/helmet2/run_001
+helmet2,run_002,0.7836439862254326,0.5797101449275361,0,0,experiments/P4_stability/helmet2/run_002
+helmet2,run_003,0.7970473091930063,0.6898550724637681,0,0,experiments/P4_stability/helmet2/run_003

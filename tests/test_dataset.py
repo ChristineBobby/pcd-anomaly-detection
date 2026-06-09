@@ -87,6 +87,25 @@ def test_read_gt_label_stats_counts_positive_labels(tmp_path: Path) -> None:
     assert label_stats.anomaly_ratio == 0.5
 
 
+def test_read_gt_label_stats_accepts_whitespace_delimited_gt(tmp_path: Path) -> None:
+    gt_path = tmp_path / "sample.txt"
+    gt_path.write_text(
+        "\n".join(
+            [
+                "0.0 0.0 0.0 0",
+                "1.0 0.0 0.0 1",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    label_stats = read_gt_label_stats(gt_path)
+
+    assert label_stats.total_points == 2
+    assert label_stats.anomaly_points == 1
+
+
 def test_discover_samples_marks_train_positive_and_anomaly_samples(tmp_path: Path) -> None:
     dataset_root = _make_tiny_anomaly_shapenet(tmp_path)
 

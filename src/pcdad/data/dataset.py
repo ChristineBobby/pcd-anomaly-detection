@@ -259,7 +259,7 @@ def read_gt_labels(path: str | Path) -> np.ndarray[Any, np.dtype[np.int64]]:
     """Read point-level labels from Anomaly-ShapeNet GT txt files."""
 
     gt_path = Path(path)
-    values = np.loadtxt(gt_path, delimiter=",", dtype=np.float32)
+    values = load_gt_values(gt_path)
     if values.size == 0:
         return np.empty((0,), dtype=np.int64)
     if values.ndim == 1:
@@ -267,6 +267,17 @@ def read_gt_labels(path: str | Path) -> np.ndarray[Any, np.dtype[np.int64]]:
     if values.shape[1] < 4:
         raise ValueError(f"GT file must contain at least 4 columns: {gt_path}")
     return (values[:, 3] > 0).astype(np.int64, copy=False)
+
+
+def load_gt_values(path: str | Path) -> np.ndarray[Any, np.dtype[np.float32]]:
+    """Load GT coordinate-label rows from comma or whitespace delimited text."""
+
+    gt_path = Path(path)
+    try:
+        values = np.loadtxt(gt_path, delimiter=",", dtype=np.float32)
+    except ValueError:
+        values = np.loadtxt(gt_path, dtype=np.float32)
+    return np.asarray(values, dtype=np.float32)
 
 
 def read_gt_label_stats(path: str | Path) -> GTLabelStats:
