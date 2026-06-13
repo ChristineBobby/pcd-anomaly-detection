@@ -1,0 +1,5 @@
+class_name,sample_id,label,point_count,gt_point_count,pasdf_object_score,geometry_object_score,hybrid_object_score,pasdf_gt_mean,pasdf_background_mean,geometry_gt_mean,geometry_background_mean,hybrid_gt_mean,hybrid_background_mean,svg_path
+tap1,tap1_broken2,1,16384,26,0.001698,0.936926,1.289039,0.000261,4.1e-05,0.579868,0.477918,1.201178,0.621018,experiments/P6_targeted_diagnostics/tap1_hybrid_scores/tap1/tap1_broken2_hybrid.svg
+tap1,tap1_broken3,1,16384,43,0.002379,0.931026,1.276239,0.000286,4e-05,0.579859,0.476939,1.23064,0.615331,experiments/P6_targeted_diagnostics/tap1_hybrid_scores/tap1/tap1_broken3_hybrid.svg
+tap1,tap1_hole0,1,16384,87,0.001395,0.934251,1.429934,0.000266,0.000109,0.643122,0.523051,1.162952,0.733096,experiments/P6_targeted_diagnostics/tap1_hybrid_scores/tap1/tap1_hole0_hybrid.svg
+tap1,tap1_positive0,0,16384,0,0.001332,0.929091,1.439421,,0.00011,,0.518173,,0.735129,experiments/P6_targeted_diagnostics/tap1_hybrid_scores/tap1/tap1_positive0_hybrid.svg
