@@ -8,7 +8,12 @@ from pathlib import Path
 from pcdad.analysis.targeted_p6 import (
     build_hybrid_records,
     build_registration_records,
+    render_alpha_sweep_markdown,
     render_p6_targeted_summary,
+    run_alpha_sweep,
+    summarize_alpha_sweep,
+    write_alpha_sweep_records_csv,
+    write_alpha_sweep_summary_csv,
     write_hybrid_scores_csv,
     write_registration_diagnostics_csv,
 )
@@ -21,6 +26,10 @@ DEFAULT_SUMMARY_MD = Path(
 )
 DEFAULT_SUMMARY_CSV = Path(
     "docs/document/stage_record/2026-06-13_p6_targeted_diagnostics_summary.csv"
+)
+DEFAULT_ALPHA_SWEEP_CSV = Path("experiments/P6_alpha_sweep/tap1_alpha_sweep_records.csv")
+DEFAULT_ALPHA_SWEEP_SUMMARY_CSV = Path(
+    "docs/document/stage_record/2026-06-13_p6_alpha_sweep_summary.csv"
 )
 DEFAULT_CAP3_SAMPLES = (
     "cap3_positive9",
@@ -53,6 +62,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--summary-md", type=Path, default=DEFAULT_SUMMARY_MD)
     parser.add_argument("--summary-csv", type=Path, default=DEFAULT_SUMMARY_CSV)
+    parser.add_argument(
+        "--alpha-grid",
+        nargs="*",
+        type=float,
+        default=[],
+        help="Optional alpha values for positive-aware sweep.",
+    )
+    parser.add_argument("--alpha-sweep-csv", type=Path, default=DEFAULT_ALPHA_SWEEP_CSV)
+    parser.add_argument(
+        "--alpha-sweep-summary-csv",
+        type=Path,
+        default=DEFAULT_ALPHA_SWEEP_SUMMARY_CSV,
+    )
     parser.add_argument("--alpha", type=float, default=1.0)
     parser.add_argument("--max-points", type=int, default=4096)
     parser.add_argument("--seed", type=int, default=42)
@@ -82,10 +104,27 @@ def main() -> None:
     write_hybrid_scores_csv(hybrid_records, hybrid_csv)
     write_hybrid_scores_csv(hybrid_records, args.summary_csv)
     args.summary_md.parent.mkdir(parents=True, exist_ok=True)
-    args.summary_md.write_text(
-        render_p6_targeted_summary(registration_records, hybrid_records),
-        encoding="utf-8",
-    )
+    markdown = render_p6_targeted_summary(registration_records, hybrid_records)
+    if args.alpha_grid:
+        alpha_records = run_alpha_sweep(
+            score_root=args.score_root,
+            template_root=args.template_root,
+            anomaly_sample_ids=tuple(args.tap1_samples),
+            positive_sample_ids=tuple(args.tap1_positive_samples),
+            alpha_grid=tuple(args.alpha_grid),
+        )
+        alpha_summaries = summarize_alpha_sweep(alpha_records)
+        write_alpha_sweep_records_csv(alpha_records, args.alpha_sweep_csv)
+        write_alpha_sweep_summary_csv(alpha_summaries, args.alpha_sweep_summary_csv)
+        markdown = (
+            markdown.rstrip()
+            + "\n\n"
+            + render_alpha_sweep_markdown(alpha_summaries).rstrip()
+            + "\n"
+        )
+        print(f"Wrote alpha sweep records CSV to {args.alpha_sweep_csv}")
+        print(f"Wrote alpha sweep summary CSV to {args.alpha_sweep_summary_csv}")
+    args.summary_md.write_text(markdown, encoding="utf-8")
 
     print(f"Wrote P6 targeted markdown to {args.summary_md}")
     print(f"Wrote P6 targeted summary CSV to {args.summary_csv}")

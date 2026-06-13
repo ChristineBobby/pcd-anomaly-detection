@@ -57,6 +57,37 @@ class HybridScoreRecord:
     svg_path: str | None
 
 
+@dataclass(frozen=True)
+class AlphaSweepRecord:
+    """One sample's hybrid score under one alpha value."""
+
+    alpha: float
+    class_name: str
+    sample_id: str
+    label: int
+    hybrid_object_score: float
+    pasdf_object_score: float
+    geometry_object_score: float
+    pasdf_separation: float | None
+    hybrid_separation: float | None
+    separation_gain: float | None
+
+
+@dataclass(frozen=True)
+class AlphaSweepSummary:
+    """Positive-aware alpha sweep aggregate for one alpha value."""
+
+    alpha: float
+    anomaly_count: int
+    positive_count: int
+    min_anomaly_hybrid_object: float | None
+    mean_anomaly_hybrid_object: float | None
+    max_positive_hybrid_object: float | None
+    mean_anomaly_separation_gain: float | None
+    strict_pass: bool
+    soft_pass: bool
+
+
 REGISTRATION_FIELDS: tuple[str, ...] = (
     "class_name",
     "sample_id",
@@ -86,6 +117,31 @@ HYBRID_FIELDS: tuple[str, ...] = (
     "hybrid_gt_mean",
     "hybrid_background_mean",
     "svg_path",
+)
+
+ALPHA_SWEEP_FIELDS: tuple[str, ...] = (
+    "alpha",
+    "class_name",
+    "sample_id",
+    "label",
+    "hybrid_object_score",
+    "pasdf_object_score",
+    "geometry_object_score",
+    "pasdf_separation",
+    "hybrid_separation",
+    "separation_gain",
+)
+
+ALPHA_SWEEP_SUMMARY_FIELDS: tuple[str, ...] = (
+    "alpha",
+    "anomaly_count",
+    "positive_count",
+    "min_anomaly_hybrid_object",
+    "mean_anomaly_hybrid_object",
+    "max_positive_hybrid_object",
+    "mean_anomaly_separation_gain",
+    "strict_pass",
+    "soft_pass",
 )
 
 
@@ -188,6 +244,140 @@ def compute_hybrid_score_record(
     )
 
 
+def build_alpha_sweep_record_from_scores(
+    *,
+    alpha: float,
+    class_name: str,
+    sample_id: str,
+    label: int,
+    pasdf_object_score: float,
+    geometry_object_score: float,
+    pasdf_scores: np.ndarray[Any, np.dtype[np.floating[Any]]],
+    geometry_scores: np.ndarray[Any, np.dtype[np.floating[Any]]],
+    mask: np.ndarray[Any, np.dtype[np.integer[Any]]],
+) -> AlphaSweepRecord:
+    """Build one alpha sweep record from point-level scores."""
+
+    if alpha < 0:
+        raise ValueError("alpha must be non-negative")
+    pasdf_values = np.asarray(pasdf_scores, dtype=np.float64).reshape(-1)
+    geometry_values = np.asarray(geometry_scores, dtype=np.float64).reshape(-1)
+    if pasdf_values.shape[0] != geometry_values.shape[0]:
+        raise ValueError("pasdf_scores and geometry_scores must have the same length")
+    pasdf_norm = robust_minmax(pasdf_values)
+    geometry_norm = robust_minmax(geometry_values)
+    hybrid_scores = pasdf_norm + alpha * geometry_norm
+    pasdf_gt_mean, pasdf_background_mean = _gt_background_means(pasdf_values, mask)
+    hybrid_gt_mean, hybrid_background_mean = _gt_background_means(hybrid_scores, mask)
+    pasdf_separation = _separation(pasdf_gt_mean, pasdf_background_mean)
+    hybrid_separation = _separation(hybrid_gt_mean, hybrid_background_mean)
+    separation_gain = (
+        None
+        if pasdf_separation is None or hybrid_separation is None
+        else hybrid_separation - pasdf_separation
+    )
+    return AlphaSweepRecord(
+        alpha=_round(alpha),
+        class_name=class_name,
+        sample_id=sample_id,
+        label=label,
+        hybrid_object_score=_round(topk_mean(hybrid_scores, ratio=0.05)),
+        pasdf_object_score=_round(pasdf_object_score),
+        geometry_object_score=_round(geometry_object_score),
+        pasdf_separation=_round_optional(pasdf_separation),
+        hybrid_separation=_round_optional(hybrid_separation),
+        separation_gain=_round_optional(separation_gain),
+    )
+
+
+def run_alpha_sweep(
+    *,
+    score_root: str | Path,
+    template_root: str | Path,
+    anomaly_sample_ids: Sequence[str],
+    positive_sample_ids: Sequence[str],
+    alpha_grid: Sequence[float],
+) -> tuple[AlphaSweepRecord, ...]:
+    """Run alpha sweep for anomaly and positive sample ids."""
+
+    sample_ids = tuple(anomaly_sample_ids) + tuple(positive_sample_ids)
+    records: list[AlphaSweepRecord] = []
+    for sample_id in sample_ids:
+        score_path = _find_sample_npz(score_root, sample_id)
+        payload = load_pasdf_point_score(score_path)
+        class_name = _class_name_from_score_path(score_path)
+        points = payload["points"].astype(np.float32)
+        pasdf_scores = payload["point_scores"].astype(np.float64).reshape(-1)
+        mask = payload["mask"].astype(np.int64).reshape(-1)
+        template_points = load_pasdf_template_points(template_root, class_name)
+        geometry_result = compute_distance_geometry_scores(points, template_points)
+        geometry_scores = np.asarray(geometry_result.point_scores, dtype=np.float64).reshape(-1)
+        for alpha in alpha_grid:
+            records.append(
+                build_alpha_sweep_record_from_scores(
+                    alpha=alpha,
+                    class_name=class_name,
+                    sample_id=score_path.stem,
+                    label=_payload_label(payload),
+                    pasdf_object_score=_payload_object_score(payload),
+                    geometry_object_score=float(geometry_result.object_score),
+                    pasdf_scores=pasdf_scores,
+                    geometry_scores=geometry_scores,
+                    mask=mask,
+                )
+            )
+    return tuple(records)
+
+
+def summarize_alpha_sweep(records: Sequence[AlphaSweepRecord]) -> tuple[AlphaSweepSummary, ...]:
+    """Summarize alpha sweep records with positive-aware pass flags."""
+
+    summaries: list[AlphaSweepSummary] = []
+    for alpha in sorted({record.alpha for record in records}):
+        alpha_records = tuple(record for record in records if record.alpha == alpha)
+        anomaly_records = tuple(record for record in alpha_records if record.label == 1)
+        positive_records = tuple(record for record in alpha_records if record.label == 0)
+        anomaly_objects = tuple(record.hybrid_object_score for record in anomaly_records)
+        positive_objects = tuple(record.hybrid_object_score for record in positive_records)
+        gains = tuple(
+            record.separation_gain
+            for record in anomaly_records
+            if record.separation_gain is not None
+        )
+        min_anomaly = min(anomaly_objects) if anomaly_objects else None
+        mean_anomaly = _mean(anomaly_objects)
+        max_positive = max(positive_objects) if positive_objects else None
+        mean_gain = _mean(gains)
+        strict_pass = (
+            min_anomaly is not None
+            and max_positive is not None
+            and mean_gain is not None
+            and min_anomaly > max_positive
+            and mean_gain > 0.0
+        )
+        soft_pass = (
+            mean_anomaly is not None
+            and max_positive is not None
+            and mean_gain is not None
+            and mean_anomaly > max_positive
+            and mean_gain > 0.0
+        )
+        summaries.append(
+            AlphaSweepSummary(
+                alpha=_round(alpha),
+                anomaly_count=len(anomaly_records),
+                positive_count=len(positive_records),
+                min_anomaly_hybrid_object=_round_optional(min_anomaly),
+                mean_anomaly_hybrid_object=_round_optional(mean_anomaly),
+                max_positive_hybrid_object=_round_optional(max_positive),
+                mean_anomaly_separation_gain=_round_optional(mean_gain),
+                strict_pass=strict_pass,
+                soft_pass=soft_pass,
+            )
+        )
+    return tuple(summaries)
+
+
 def robust_minmax(
     scores: np.ndarray[Any, np.dtype[np.floating[Any]]],
 ) -> np.ndarray[Any, np.dtype[np.float64]]:
@@ -238,6 +428,86 @@ def write_hybrid_scores_csv(records: Sequence[HybridScoreRecord], path: str | Pa
                 {field: ("" if row[field] is None else row[field]) for field in HYBRID_FIELDS}
             )
     return output
+
+
+def write_alpha_sweep_records_csv(
+    records: Sequence[AlphaSweepRecord],
+    path: str | Path,
+) -> Path:
+    """Write per-sample alpha sweep records."""
+
+    return _write_alpha_csv(records, ALPHA_SWEEP_FIELDS, path)
+
+
+def write_alpha_sweep_summary_csv(
+    records: Sequence[AlphaSweepSummary],
+    path: str | Path,
+) -> Path:
+    """Write alpha sweep summary records."""
+
+    return _write_alpha_csv(records, ALPHA_SWEEP_SUMMARY_FIELDS, path)
+
+
+def render_alpha_sweep_markdown(
+    summaries: Sequence[AlphaSweepSummary],
+    *,
+    title: str = "P6 Alpha Sweep Positive-Aware Summary",
+) -> str:
+    """Render alpha sweep summary Markdown."""
+
+    lines = [
+        f"# {title}",
+        "",
+        "## 判定口径",
+        "",
+        "- object score 越高表示越异常。",
+        "- strict pass: `min anomaly hybrid object > max positive hybrid object` 且 "
+        "`mean anomaly separation gain > 0`。",
+        "- soft pass: `mean anomaly hybrid object > max positive hybrid object` 且 "
+        "`mean anomaly separation gain > 0`。",
+        "",
+        "## Alpha Sweep",
+        "",
+        "| alpha | anomaly数 | positive数 | min anomaly obj | mean anomaly obj | "
+        "max positive obj | mean sep gain | strict | soft |",
+        "|---:|---:|---:|---:|---:|---:|---:|---|---|",
+    ]
+    for record in summaries:
+        lines.append(
+            f"| {record.alpha:.6f} | {record.anomaly_count} | {record.positive_count} | "
+            f"{_fmt_optional(record.min_anomaly_hybrid_object)} | "
+            f"{_fmt_optional(record.mean_anomaly_hybrid_object)} | "
+            f"{_fmt_optional(record.max_positive_hybrid_object)} | "
+            f"{_fmt_optional(record.mean_anomaly_separation_gain)} | "
+            f"{record.strict_pass} | {record.soft_pass} |"
+        )
+    lines.extend(["", "## 结论", ""])
+    strict_candidates = tuple(record for record in summaries if record.strict_pass)
+    soft_candidates = tuple(record for record in summaries if record.soft_pass)
+    if strict_candidates:
+        best = max(
+            strict_candidates,
+            key=lambda record: record.mean_anomaly_separation_gain or float("-inf"),
+        )
+        lines.append(
+            f"- 存在 strict pass alpha，当前最佳为 `{best.alpha:.6f}`，可进入更大代表类别验证。"
+        )
+    elif soft_candidates:
+        best = max(
+            soft_candidates,
+            key=lambda record: record.mean_anomaly_separation_gain or float("-inf"),
+        )
+        lines.append(
+            f"- 没有 strict pass，但存在 soft pass alpha `{best.alpha:.6f}`；"
+            "后续需要人工复查 positive false-positive 风险。"
+        )
+    else:
+        lines.append(
+            "- 没有 alpha 同时满足 anomaly 分离提升和 positive-aware object 排序约束；"
+            "当前 additive fusion 不建议扩大实验。"
+        )
+    lines.append("")
+    return "\n".join(lines)
 
 
 def render_p6_targeted_summary(
@@ -388,6 +658,22 @@ def build_hybrid_records(
     return tuple(records)
 
 
+def _write_alpha_csv(
+    records: Sequence[AlphaSweepRecord] | Sequence[AlphaSweepSummary],
+    fields: tuple[str, ...],
+    path: str | Path,
+) -> Path:
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        for record in records:
+            row = asdict(record)
+            writer.writerow({field: ("" if row[field] is None else row[field]) for field in fields})
+    return output
+
+
 def _class_name_from_score_path(path: Path) -> str:
     return path.parent.parent.name
 
@@ -437,6 +723,12 @@ def _hybrid_improves_pasdf(record: HybridScoreRecord) -> bool:
     if pasdf_separation is None or hybrid_separation is None:
         return False
     return hybrid_separation > pasdf_separation
+
+
+def _mean(values: Sequence[float]) -> float | None:
+    if not values:
+        return None
+    return float(np.mean(np.asarray(values, dtype=np.float64)))
 
 
 def _round(value: float) -> float:
