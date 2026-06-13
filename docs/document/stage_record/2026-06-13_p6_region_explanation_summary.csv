@@ -1,0 +1,11 @@
+record_type,class_name,sample_id,label,point_count,gt_point_count,neighbor_radius,pasdf_topk_gt_hit_rate,geometry_topk_gt_hit_rate,pasdf_gt_coverage,geometry_gt_coverage,pasdf_neighbor_hit_rate,geometry_neighbor_hit_rate,pasdf_neighbor_enrichment,geometry_neighbor_enrichment,pasdf_object_score,residual_topk_mean,residual_topk_p95,pasdf_residual_topk_overlap,residual_topk_bbox_ratio,residual_topk_mean_pair_distance_ratio
+tap1_region,tap1,tap1_broken2,1,16384,26,0.021398,0.019512,0.006098,0.615385,0.192308,0.05,0.006098,6.113433,0.745541,,,,,,
+tap1_region,tap1,tap1_broken3,1,16384,43,0.021418,0.036585,0.010976,0.697674,0.209302,0.089024,0.015854,8.7866,1.564737,,,,,,
+tap1_region,tap1,tap1_hole0,1,16384,87,0.021321,0.046341,0.02439,0.436782,0.229885,0.178049,0.026829,9.627562,1.450728,,,,,,
+cap3_residual,cap3,cap3_positive9,0,16384,,,,,,,,,,,0.109517,0.073342,0.115427,0.986585,0.459868,0.127015
+cap3_residual,cap3,cap3_positive7,0,16384,,,,,,,,,,,0.096982,0.054389,0.094158,0.989024,0.49767,0.131435
+cap3_residual,cap3,cap3_positive10,0,16384,,,,,,,,,,,0.064902,0.020964,0.05275,0.903659,0.999944,0.235032
+cap3_residual,cap3,cap3_hole0,1,16384,,,,,,,,,,,0.006392,0.003005,0.004936,0.269512,0.996477,0.356347
+cap3_residual,cap3,cap3_hole1,1,16384,,,,,,,,,,,0.010446,0.003518,0.007867,0.326829,0.998097,0.361764
+cap3_residual,cap3,cap3_broken2,1,16384,,,,,,,,,,,0.012887,0.003962,0.009887,0.440244,0.999043,0.373308
+cap3_residual,cap3,cap3_broken3,1,16384,,,,,,,,,,,0.028583,0.00903,0.022729,0.635366,0.99288,0.343603
