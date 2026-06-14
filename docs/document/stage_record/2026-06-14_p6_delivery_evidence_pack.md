@@ -10,7 +10,8 @@
 
 ## 1. 交付范围
 
-- 当前记录 commit：`2d3f338`。
+- 证据生成基准 commit：`e4dbc77`。
+- 最终交付状态以发布时的 `git log -1` 或 `v0.1-p6-delivery` tag 为准。
 - 本证据包覆盖 P3 baseline、P4 几何负结果、P5 targeted case study、P6 诊断与 failure-mode closure。
 - `experiments/` 下的大型产物不进入 git；本文件只记录路径、命令和结论。
 

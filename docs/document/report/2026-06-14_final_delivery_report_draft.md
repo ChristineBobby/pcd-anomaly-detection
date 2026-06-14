@@ -12,6 +12,8 @@
 
 本项目以 Anomaly-ShapeNet 40 类协议为主基准，复现 PASDF 官方权重并完成几何增强、targeted case study 和 P6 failure-mode closure。当前自跑 PASDF mean object AUROC 为 `0.900214149779`，达到论文级锚点。
 
+本报告草稿对应证据生成基准 commit：`e4dbc77`。最终交付冻结建议使用 tag：`v0.1-p6-delivery`。
+
 ## 2. 方法与实验主线
 
 - P3：PASDF 官方权重评估，固定 40 类 baseline。

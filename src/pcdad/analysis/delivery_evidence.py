@@ -111,7 +111,8 @@ def render_delivery_evidence_markdown(
         "",
         "## 1. 交付范围",
         "",
-        f"- 当前记录 commit：`{commit_hash}`。",
+        f"- 证据生成基准 commit：`{commit_hash}`。",
+        "- 最终交付状态以发布时的 `git log -1` 或 `v0.1-p6-delivery` tag 为准。",
         "- 本证据包覆盖 P3 baseline、P4 几何负结果、P5 targeted case study、"
         "P6 诊断与 failure-mode closure。",
         "- `experiments/` 下的大型产物不进入 git；本文件只记录路径、命令和结论。",
@@ -196,6 +197,9 @@ def render_final_delivery_report_draft(
         "本项目以 Anomaly-ShapeNet 40 类协议为主基准，复现 PASDF 官方权重并完成"
         "几何增强、targeted case study 和 P6 failure-mode closure。当前自跑 PASDF "
         "mean object AUROC 为 `0.900214149779`，达到论文级锚点。",
+        "",
+        f"本报告草稿对应证据生成基准 commit：`{record_tuple[0].commit_hash}`。"
+        "最终交付冻结建议使用 tag：`v0.1-p6-delivery`。",
         "",
         "## 2. 方法与实验主线",
         "",
