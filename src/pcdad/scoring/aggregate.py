@@ -54,7 +54,9 @@ def smooth_point_scores(
             f"Score count {values.shape[0]} does not match point count {points_array.shape[0]}"
         )
     if k <= 0 or points_array.shape[0] <= 1:
-        return values.copy()
+        copied = np.empty_like(values, dtype=np.float64)
+        copied[:] = values
+        return copied
     effective_k = min(k, points_array.shape[0] - 1)
     indices = knn_indices(points_array, k=effective_k)
     smoothed = np.empty_like(values, dtype=np.float64)
@@ -67,7 +69,7 @@ def smooth_point_scores(
 def _as_scores(
     scores: np.ndarray[Any, np.dtype[np.floating[Any]]],
 ) -> np.ndarray[Any, np.dtype[np.float64]]:
-    values = np.asarray(scores, dtype=np.float64)
+    values: np.ndarray[Any, np.dtype[np.float64]] = np.asarray(scores, dtype=np.float64)
     if values.ndim != 1:
         raise ValueError(f"Expected one-dimensional scores, got {values.shape}")
     if values.shape[0] == 0:
