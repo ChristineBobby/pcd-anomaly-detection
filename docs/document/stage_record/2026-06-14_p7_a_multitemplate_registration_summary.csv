@@ -1,0 +1,19 @@
+section,class_name,label,n,mean_pasdf_object_score,mean_nn_topk_mean,mean_top1_top2_margin,mean_assignment_entropy,mean_residual_overlap,mean_registration_confidence,max_pasdf_object_score,sample_id,template_id,top2_nn_topk_mean,top1_top2_relative_margin,risk_reason,note
+class_label,ashtray0,0,15,0.004438,0.215932,0.080969,0.661740,0.004065,0.421359,0.005049,,,,,,
+class_label,ashtray0,1,14,0.056610,0.218710,0.080156,0.662892,0.029617,0.414408,0.081680,,,,,,
+class_label,cap3,0,15,0.032340,0.262006,0.035786,0.639229,0.067886,0.399334,0.109517,,,,,,
+class_label,cap3,1,19,0.029329,0.261857,0.039744,0.610973,0.000000,0.415485,0.074786,,,,,,
+class_label,helmet1,0,15,0.019209,0.125091,0.047511,0.649726,0.000813,0.499932,0.026289,,,,,,
+class_label,helmet1,1,14,0.025223,0.126672,0.045847,0.654253,0.047474,0.485751,0.032876,,,,,,
+class_label,tap1,0,15,0.002928,0.197046,0.240588,0.581758,0.102032,0.411358,0.003705,,,,,,
+class_label,tap1,1,18,0.023089,0.196133,0.241052,0.581802,0.039295,0.427487,0.065518,,,,,,
+cap_focus,cap3,0,,,,0.275955,0.004327,0.778389,0.634146,0.270470,0.109517,cap3_positive9,cap3_template0,0.280282,0.015680,template_mismatch_risk,highest cap3 positive false positive
+cap_focus,cap3,0,,,,0.262592,0.021731,0.736778,0.384146,0.344184,0.096982,cap3_positive7,cap3_template0,0.284323,0.082756,template_mismatch_risk,second cap3 positive false positive
+cap_focus,cap3,0,,,,0.256855,0.024821,0.728594,0.000000,0.388208,0.064902,cap3_positive10,cap3_template0,0.281676,0.096634,moderate_registration_risk,third cap3 positive false positive
+cap_focus,cap3,1,,,,0.262193,0.038309,0.609677,0.000000,0.415500,0.006392,cap3_hole0,cap3_template0,0.300502,0.146110,moderate_registration_risk,anomaly control
+cap_focus,cap3,1,,,,0.264764,0.035487,0.614375,0.000000,0.412941,0.010446,cap3_hole1,cap3_template0,0.300251,0.134033,moderate_registration_risk,anomaly control
+cap_focus,cap3,1,,,,0.263262,0.040159,0.601091,0.000000,0.417046,0.012887,cap3_broken2,cap3_template0,0.303421,0.152544,moderate_registration_risk,anomaly control
+cap_focus,cap3,1,,,,0.258799,0.048633,0.582274,0.000000,0.424631,0.028583,cap3_broken3,cap3_template0,0.307432,0.187918,moderate_registration_risk,anomaly control
+top_risk,cap3,0,,,,0.275955,0.004327,0.778389,0.634146,0.270470,0.109517,cap3_positive9,cap3_template0,,0.015680,template_mismatch_risk,top risk by confidence
+top_risk,ashtray0,1,,,,0.254615,0.043202,0.710953,0.353659,0.307984,0.065764,ashtray0_bulge1,ashtray0_template2,,0.169676,template_mismatch_risk,anomaly also flagged as high registration risk
+top_risk,cap3,0,,,,0.262592,0.021731,0.736778,0.384146,0.344184,0.096982,cap3_positive7,cap3_template0,,0.082756,template_mismatch_risk,top risk by confidence
