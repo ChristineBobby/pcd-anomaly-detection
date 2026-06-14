@@ -1,0 +1,4 @@
+class_name,primary_failure_mode,object_boundary_status,localization_status,evidence,next_action
+cap3,registration/template false positive,failed,5 weak-localization anomaly samples,top-k calibration failed; cap3 positive residual overlap should be checked,continue registration/template robustness; do not tune PASDF top-k only
+helmet1,point-level localization weakness,failed,3 weak-localization anomaly samples,mean anomaly can be high but positive boundary still overlaps,audit weak-localization anomalies and high positive boundary samples
+tap1,soft object boundary with low-amplitude local PASDF signal,soft_pass,2 weak-localization anomaly samples,PASDF-only calibration soft-passes; additive geometry fusion remains rejected,audit positive boundary and low-score anomalies; keep geometry as diagnostic only
