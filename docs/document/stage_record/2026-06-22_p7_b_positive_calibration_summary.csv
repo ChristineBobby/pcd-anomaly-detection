@@ -1,0 +1,26 @@
+section,class_name,method,split_tag,object_auroc,object_aupr,boundary_margin,strict_pass,false_positive_top1_sample_id,false_positive_top1_score,sample_id,label,pasdf_score,registration_confidence,calibrated_score,note
+selected_summary,cap3,pasdf_raw,none,0.575439,0.579692,-0.103125,False,cap3_positive9,0.109517,,,,,baseline failed
+selected_summary,cap3,confidence_gate,none,0.575439,0.585245,-0.030724,False,cap3_positive7,0.033380,,,,,best conservative non-learning shrink for cap3
+selected_summary,cap3,template_residual,none,0.571930,0.633048,-0.018249,False,cap3_positive9,0.275955,,,,,residual alone still not strict pass
+selected_summary,cap3,logistic_l2,diagnostic_oracle,0.722807,0.730090,-0.009425,False,cap3_positive13,0.510603,,,,,oracle improves but still not strict
+selected_summary,cap3,logistic_l2,leave_one_class_out:cap3,0.578947,0.581831,-0.022344,False,cap3_positive9,0.517078,,,,,cross-class generalization weak
+selected_summary,tap1,pasdf_raw,none,0.770370,0.879436,-0.002310,False,tap1_positive14,0.003705,,,,,baseline soft boundary
+selected_summary,tap1,confidence_gate,none,0.777778,0.882106,-0.000980,False,tap1_positive14,0.001545,,,,,small boundary shrink
+selected_summary,tap1,logistic_l2,leave_one_class_out:tap1,0.770370,0.880095,-0.000711,False,tap1_positive7,0.500174,,,,,best margin but not strict
+selected_summary,tap1,isotonic_pasdf,diagnostic_oracle,0.870370,0.878472,0.000000,False,tap1_positive9,0.135135,,,,,tie at boundary; not strict
+selected_summary,helmet1,pasdf_raw,none,0.885714,0.901623,-0.007603,False,helmet1_positive6,0.026289,,,,,baseline failed boundary
+selected_summary,helmet1,confidence_gate,none,0.866667,0.885363,-0.003491,False,helmet1_positive6,0.012802,,,,,best conservative shrink
+selected_summary,helmet1,logistic_l2,diagnostic_oracle,0.700000,0.725784,-0.048054,False,helmet1_positive6,0.498554,,,,,learned head worsens boundary
+selected_summary,ashtray0,pasdf_raw,none,1.000000,1.000000,0.025778,True,ashtray0_positive6,0.005049,,,,,control already strict pass
+selected_summary,ashtray0,confidence_gate,none,1.000000,1.000000,0.010904,True,ashtray0_positive6,0.002121,,,,,control remains strict
+selected_summary,ashtray0,logistic_l2,leave_one_class_out:ashtray0,0.785714,0.885106,-0.051516,False,ashtray0_positive10,0.502794,,,,,learned head can damage control
+cap_focus,cap3,pasdf_raw,none,,,,,,,cap3_positive9,0,0.109517,0.270470,0.109517,highest cap3 positive baseline
+cap_focus,cap3,confidence_gate,none,,,,,,,cap3_positive9,0,0.109517,0.270470,0.029621,gate lowers false-positive magnitude
+cap_focus,cap3,logistic_l2,diagnostic_oracle,,,,,,,,cap3_positive9,0,0.109517,0.270470,0.441390,oracle lowers relative to 0.5 but still high
+cap_focus,cap3,logistic_l2,leave_one_class_out:cap3,,,,,,,,cap3_positive9,0,0.109517,0.270470,0.517078,held-out class fails to suppress
+cap_focus,cap3,pasdf_raw,none,,,,,,,cap3_positive7,0,0.096982,0.344184,0.096982,second false positive
+cap_focus,cap3,confidence_gate,none,,,,,,,cap3_positive7,0,0.096982,0.344184,0.033380,becomes confidence_gate top positive
+cap_focus,cap3,pasdf_raw,none,,,,,,,cap3_hole0,1,0.006392,0.415500,0.006392,weak anomaly remains low
+cap_focus,cap3,confidence_gate,none,,,,,,,cap3_hole0,1,0.006392,0.415500,0.002656,gate lowers anomaly too
+cap_focus,cap3,logistic_l2,diagnostic_oracle,,,,,,,,cap3_hole0,1,0.006392,0.415500,0.502834,oracle raises weak anomaly
+cap_focus,cap3,logistic_l2,leave_one_class_out:cap3,,,,,,,,cap3_hole0,1,0.006392,0.415500,0.494734,held-out class not enough
