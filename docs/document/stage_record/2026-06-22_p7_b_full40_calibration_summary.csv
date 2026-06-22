@@ -1,0 +1,10 @@
+method,split_tag,class_count,mean_object_auroc,mean_object_aupr,strict_pass,mean_boundary_margin,median_boundary_margin
+pasdf_raw,none,40,0.894797,0.908544,12,-0.022879,-0.001892
+confidence_gate,none,40,0.895756,0.911860,12,-0.008504,-0.000830
+template_residual,none,40,0.488424,0.585162,0,-0.009668,-0.005094
+isotonic_pasdf,diagnostic_oracle,40,0.903498,0.900821,12,-0.029632,0.000000
+isotonic_gated,diagnostic_oracle,40,0.903332,0.901459,12,-0.009546,0.000000
+logistic_l2,diagnostic_oracle,40,0.897364,0.911203,12,-0.031206,-0.003679
+isotonic_pasdf,leave_one_class_out_all,40,0.887173,0.886438,12,-0.048715,0.000000
+isotonic_gated,leave_one_class_out_all,40,0.883498,0.883292,12,-0.031891,0.000000
+logistic_l2,leave_one_class_out_all,40,0.889270,0.905384,9,-0.035654,-0.004355
